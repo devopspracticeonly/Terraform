@@ -33,7 +33,7 @@ pipeline {
         stage('Terraform Format Check') {
             steps {
                 dir("${TF_DIR}") {
-                    sh 'terraform fmt'
+                    sh 'terraform fmt -check'
                 }
             }
         }
@@ -46,13 +46,6 @@ pipeline {
             }
         }
 
-        stage('Approval') {
-            steps {
-                input message: 'Do you want to apply Terraform changes?',
-                      ok: 'Apply'
-            }
-        }
-
         stage('Terraform Apply') {
             steps {
                 dir("${TF_DIR}") {
@@ -60,11 +53,42 @@ pipeline {
                 }
             }
         }
+
+        stage('Verify Resources') {
+            steps {
+                dir("${TF_DIR}") {
+                    sh 'terraform show'
+                }
+            }
+        }
+
+        stage('Terraform Destroy Plan') {
+            steps {
+                dir("${TF_DIR}") {
+                    sh 'terraform plan -destroy -out=destroy.tfplan'
+                }
+            }
+        }
+
+        stage('Destroy Approval') {
+            steps {
+                input message: 'Resource has been created and verified. Do you want to destroy it?',
+                      ok: 'Destroy'
+            }
+        }
+
+        stage('Terraform Destroy') {
+            steps {
+                dir("${TF_DIR}") {
+                    sh 'terraform apply -auto-approve destroy.tfplan'
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'Terraform deployment completed successfully.'
+            echo 'Terraform Apply and Destroy completed successfully.'
         }
 
         failure {
