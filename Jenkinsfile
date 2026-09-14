@@ -33,7 +33,7 @@ pipeline {
         stage('Terraform Format Check') {
             steps {
                 dir("${TF_DIR}") {
-                    sh 'terraform fmt -check'
+                    sh 'terraform fmts'
                 }
             }
         }
