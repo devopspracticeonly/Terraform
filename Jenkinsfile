@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_DEFAULT_REGION = 'us-east-1'
-        TF_DIR = './'
+        TF_DIR = 'terraform'
     }
 
     stages {
